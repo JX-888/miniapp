@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日一思 · Demo</title>
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --bg-2: #F4F4F5;
+    --paper-2: #FAFAF9;
+    --card: #FFFFFF;
+    --ink: #18181B;
+    --ink-2: #52525B;
+    --ink-3: #A1A1AA;
+    --ink-4: #D4D4D8;
+    --line: #F4F4F5;
+    --line-2: #E4E4E7;
+    --zinc-50: #FAFAFA;
+    --zinc-100: #F4F4F5;
+    --zinc-200: #E4E4E7;
+    --zinc-900: #18181B;
+    --amber-400: #FBBF24;
+    --amber-500: #F59E0B;
+    --amber-600: #D97706;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Noto Serif SC', sans-serif;
+    background: radial-gradient(ellipse at top, #FAFAFA 0%, #E4E4E7 100%);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    color: var(--ink);
+    padding: 20px 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 桌面端说明 */
+  .desktop-tip {
+    position: fixed; top: 24px; left: 24px;
+    background: rgba(24, 24, 27, .92); color: #FAFAFA;
+    padding: 14px 20px; border-radius: 16px;
+    font-size: 13px; max-width: 280px; line-height: 1.7;
+    z-index: 9999; backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  }
+  .desktop-tip b {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 16px; font-weight: 600;
+    display: block; margin-bottom: 4px;
+  }
+  @media (max-width: 480px) { .desktop-tip { display: none; } }
+
+  /* iPhone 容器 */
+  .phone {
+    width: 390px; height: 800px;
+    background: var(--bg);
+    border-radius: 44px;
+    box-shadow:
+      0 30px 80px rgba(24, 24, 27, .15),
+      0 10px 30px rgba(24, 24, 27, .12),
+      inset 0 0 0 10px #18181B;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  /* 状态栏 */
+  .status-bar {
+    height: 44px; padding: 0 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .status-bar .right { display: flex; gap: 6px; align-items: center; }
+  .battery {
+    width: 24px; height: 12px; border: 1.2px solid var(--ink); border-radius: 3px;
+    position: relative;
+  }
+  .battery::after {
+    content: ''; position: absolute; right: -3px; top: 3px;
+    width: 2px; height: 6px; background: var(--ink); border-radius: 0 1px 1px 0;
+  }
+  .battery-fill {
+    position: absolute; left: 1.5px; top: 1.5px; bottom: 1.5px; width: 70%;
+    background: var(--ink); border-radius: 1px;
+  }
+
+  /* 主内容 */
+  .content {
+    flex: 1; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* 页面 */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ============ Bento Grid ============ */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px 20px 32px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line-2);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,.04);
+    transition: transform .2s ease-out, box-shadow .2s ease-out;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .card:hover {
+    box-shadow: 0 6px 16px -4px rgba(24,24,27,.10), 0 2px 4px -2px rgba(24,24,27,.06);
+    transform: translateY(-2px) scale(1.01);
+  }
+  .card:active { transform: scale(.98); }
+
+  .col-2 { grid-column: span 2; }
+  .row-2 { grid-row: span 2; }
+
+  /* 渐变卡 */
+  .grad-amber { background: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 100%); border-color: #FDE68A; }
+  .grad-rose { background: linear-gradient(135deg, #FFE4E6 0%, #FECDD3 100%); border-color: #FECDD3; }
+  .grad-violet { background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%); border-color: #DDD6FE; }
+  .grad-teal { background: linear-gradient(135deg, #CCFBF1 0%, #A7F3D0 100%); border-color: #99F6E4; }
+  .grad-sky { background: linear-gradient(135deg, #DBEAFE 0%, #BAE6FD 100%); border-color: #BAE6FD; }
+  .grad-warm { background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%); border-color: #FED7AA; }
+
+  /* 详情卡（无 hover） */
+  .card-static { cursor: pointer; }
+
+  /* ============ 字体 ============ */
+  .serif { font-family: 'Noto Serif SC', 'Songti SC', Georgia, serif; }
+
+  /* ============ 通用元素 ============ */
+  .eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .eyebrow .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--ink); display: inline-block;
+  }
+
+  .h1 {
+    font-family: 'Noto Serif SC', 'Songti SC', Georgia, serif;
+    font-size: 26px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+    letter-spacing: -.3px;
+  }
+  .h2 {
+    font-size: 20px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .h3 {
+    font-size: 16px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .body {
+    font-size: 13px; line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .meta {
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 1px;
+  }
+
+  .num-big {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 36px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .num-med {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  /* ============ 今日页 ============ */
+  .q-card {
+    padding: 20px 18px;
+    min-height: 140px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .q-cat {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 11px; font-weight: 500;
+    color: #92400E;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .q-cat::before {
+    content: ''; width: 6px; height: 6px;
+    background: #F59E0B; border-radius: 50%;
+  }
+  .q-text {
+    font-family: 'Noto Serif SC', 'Songti SC', Georgia, serif;
+    font-size: 22px; font-weight: 600;
+    color: #1F1410;
+    line-height: 1.35;
+    margin: 12px 0 10px;
+    letter-spacing: -.2px;
+  }
+  .q-guide {
+    font-size: 12px; line-height: 1.6;
+    color: #78350F;
+    opacity: .9;
+    padding-left: 10px;
+    border-left: 1.5px solid #FBBF24;
+  }
+
+  .stat-card {
+    padding: 14px;
+    min-height: 90px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .stat-card .lbl {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .stat-card .num {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 28px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+    margin-top: 6px;
+  }
+  .stat-card .unit {
+    font-size: 11px; color: var(--ink-3);
+    margin-left: 2px; font-weight: 400;
+  }
+  .stat-card .icon {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 22px;
+    transition: transform .2s ease-out;
+  }
+  .stat-card:hover .icon { transform: scale(1.15) rotate(-4deg); }
+
+  /* === 今日页 · 本月打卡迷你圆环卡 === */
+  .month-card {
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+  .month-ring-wrap {
+    position: relative; width: 58px; height: 58px;
+    margin: 2px auto 0;
+  }
+  .month-ring {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: conic-gradient(var(--amber-500) calc(var(--p) * 1%), var(--line-2) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent 62%, #000 64%);
+            mask: radial-gradient(farthest-side, transparent 62%, #000 64%);
+    transition: background .5s ease-out;
+  }
+  .month-ring-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--amber-600);
+    font-variant-numeric: tabular-nums;
+  }
+  .month-foot {
+    font-size: 10px; color: var(--ink-3); text-align: center;
+    letter-spacing: .3px;
+  }
+  .month-foot b { color: var(--ink-2); font-weight: 600; }
+
+  /* 迷你 7 天打卡条 */
+  .mini-week { display: flex; gap: 5px; margin-top: 12px; }
+  .mw-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .mw-dot { width: 13px; height: 13px; border-radius: 4.5px; background: var(--bg-2); }
+  .mw-dot.done { background: linear-gradient(135deg, #D97706, #B45309); box-shadow: 0 2px 5px rgba(180,83,9,.28); }
+  .mw-dot.today { background: #FEF3C7; border: 1.5px solid var(--amber-500); }
+  .mw-wd { font-size: 8px; color: var(--ink-3); letter-spacing: .5px; }
+  .streak-foot { margin-top: 11px; font-size: 9.5px; color: var(--ink-3); letter-spacing: .4px; }
+  .streak-foot b { color: var(--amber-600); font-weight: 600; }
+
+  .write-card {
+    padding: 18px;
+    min-height: 180px;
+    display: flex; flex-direction: column;
+  }
+  .write-card textarea {
+    flex: 1;
+    width: 100%; min-height: 110px;
+    border: none; outline: none; resize: none;
+    font-family: 'Noto Serif SC', 'Songti SC', Georgia, serif;
+    font-size: 15px; line-height: 1.75;
+    color: var(--ink);
+    background: transparent;
+  }
+  .write-card textarea::placeholder {
+    color: var(--ink-4);
+  }
+  .write-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-2);
+  }
+  .save-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ink-4);
+    display: inline-block;
+    transition: all .2s;
+  }
+  .save-dot.saving { background: #F59E0B; }
+  .save-dot.saved { background: #10B981; }
+
+  .review-card {
+    padding: 16px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 80px;
+  }
+  .review-card .l { flex: 1; }
+  .review-card .title {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 16px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .review-card .sub {
+    font-size: 12px; color: var(--ink-2);
+    letter-spacing: .5px;
+  }
+  .review-card .arrow {
+    font-size: 18px; color: var(--ink-3);
+    transition: transform .2s;
+  }
+  .review-card:hover .arrow {
+    transform: translateX(4px);
+    color: var(--ink);
+  }
+  .review-rose .title { color: #9F1239; }
+  .review-violet .title { color: #5B21B6; }
+
+  /* ============ 历史页 ============ */
+  .page-h {
+    padding: 8px 20px 4px;
+  }
+  .page-h h1 {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .page-h .sub {
+    font-size: 13px; color: var(--ink-2);
+  }
+
+  .streak-card {
+    padding: 18px;
+    min-height: 110px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+
+  .entry-card {
+    padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .entry-card .meta {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; color: var(--ink-3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .entry-card .meta .num {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .entry-card .q {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .entry-card .p {
+    font-size: 12px; color: var(--ink-2);
+    line-height: 1.55;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ============ 我的页 ============ */
+  .me-card {
+    padding: 22px 18px;
+    text-align: center;
+  }
+  .me-avatar {
+    width: 72px; height: 72px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #FED7AA, #FCA5A5);
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 28px; font-weight: 600;
+    box-shadow: 0 6px 18px rgba(252, 165, 165, .35);
+  }
+  .me-name {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 18px; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .me-id {
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: .5px;
+  }
+
+  /* === 我的页 顶部 hero === */
+  .me-hero {
+    padding: 18px 22px 14px;
+    text-align: center;
+  }
+  .me-eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 12px;
+  }
+  .me-hero .me-avatar {
+    width: 64px; height: 64px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #FCD9B4, #F5B894);
+    margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 24px; font-weight: 600;
+    box-shadow: 0 6px 16px rgba(245, 184, 148, .35);
+    border: 2px solid #FFFFFF;
+  }
+  .me-hero .me-name {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 17px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .me-hero .me-id {
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: .3px;
+  }
+
+  /* === 连续打卡卡 === */
+  .streak-card {
+    padding: 18px 16px;
+    min-height: 130px;
+    position: relative;
+    overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .streak-flame {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.5);
+    color: #B45309;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .25s ease-out;
+  }
+  .streak-card:hover .streak-flame {
+    transform: scale(1.12) rotate(-8deg);
+  }
+  .streak-flame svg { width: 18px; height: 18px; }
+  .streak-num {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 48px; font-weight: 700;
+    line-height: 1;
+    color: #7C2D12;
+    letter-spacing: -1px;
+  }
+  .streak-lbl {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #9A3412;
+    margin-top: 4px;
+  }
+  .streak-sub {
+    font-size: 11px;
+    color: #9A3412;
+    margin-top: 2px;
+  }
+
+  /* === 月度打卡率 圆环卡 === */
+  .ring-card {
+    padding: 16px;
+    min-height: 130px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  }
+  .ring-wrap {
+    position: relative;
+    width: 64px; height: 64px;
+  }
+  .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--zinc-100); stroke-width: 6; }
+  .ring-fg {
+    fill: none; stroke: var(--amber-600); stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 163.36;
+    stroke-dashoffset: 102.8;
+    transition: stroke-dashoffset .8s ease-out;
+  }
+  .ring-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--ink);
+  }
+  .ring-lbl {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-top: 6px;
+    text-align: center;
+  }
+  .ring-sub {
+    font-size: 11px; color: var(--ink-3);
+    margin-top: 2px;
+  }
+
+  /* === 日历大卡 === */
+  .calendar-card {
+    padding: 18px;
+    background: var(--paper-2);
+    cursor: default;
+  }
+  /* 日历卡整体不要在 hover 时上浮+缩放，否则子 cell 跟随移动导致 click 落空 */
+  .calendar-card:hover {
+    transform: none;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,.04);
+  }
+  .cal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .cal-eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .cal-title {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 20px; font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -.3px;
+  }
+  .cal-nav { display: flex; gap: 4px; }
+  .cal-btn {
+    width: 28px; height: 28px;
+    border-radius: 10px;
+    background: var(--zinc-100);
+    color: var(--ink-2);
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s ease-out;
+  }
+  .cal-btn:hover { background: var(--zinc-900); color: #fff; }
+  .cal-btn:active { transform: scale(.94); }
+
+  .cal-week {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+    padding: 0 2px;
+  }
+  .cal-week span {
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-align: center;
+    padding: 4px 0;
+  }
+
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-cell {
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink-3);
+    background: transparent;
+    position: relative;
+    transition: all .2s ease-out;
+    cursor: default;
+  }
+  .cal-cell.is-other { color: var(--zinc-200); }
+  .cal-cell.is-done {
+    background: var(--zinc-900);
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+  .cal-cell.is-done::after {
+    content: '';
+    position: absolute; right: 4px; top: 4px;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--amber-400);
+  }
+  .cal-cell.is-today {
+    border: 2px solid var(--amber-500);
+    color: var(--amber-600);
+    font-weight: 700;
+    background: rgba(245, 158, 11, .08);
+  }
+  .cal-cell.is-today.is-done {
+    background: var(--amber-500);
+    color: #FFFFFF;
+    border-color: var(--amber-600);
+  }
+  .cal-cell.is-today.is-done::after {
+    background: #FFFFFF;
+  }
+  .cal-cell.is-future { color: var(--zinc-200); background: var(--zinc-50); }
+
+  .cal-foot {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--zinc-200);
+  }
+  .legend {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; color: var(--ink-3);
+    letter-spacing: .3px;
+  }
+  .legend .dot {
+    width: 8px; height: 8px; border-radius: 3px;
+    display: inline-block;
+  }
+  .legend .d-done { background: var(--zinc-900); }
+  .legend .d-today { background: var(--amber-500); }
+  .legend .d-miss { background: transparent; border: 1px solid var(--zinc-200); }
+  .legend .d-future { background: var(--zinc-50); }
+
+  /* === 下一个成就卡 === */
+  .goal-card {
+    padding: 16px;
+    min-height: 130px;
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border-color: #FDE68A;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .goal-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.55);
+    color: #92400E;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .25s ease-out;
+  }
+  .goal-card:hover .goal-icon { transform: scale(1.15) rotate(8deg); }
+  .goal-icon svg { width: 18px; height: 18px; }
+  .goal-lbl {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #92400E;
+  }
+  .goal-num {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 24px; font-weight: 700;
+    color: #78350F;
+    margin-top: 4px;
+    line-height: 1;
+  }
+  .goal-divider {
+    color: #D97706; font-weight: 400; margin: 0 4px;
+  }
+  .goal-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(120, 53, 15, .12);
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .goal-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    transition: width .6s ease-out;
+  }
+  .goal-sub {
+    font-size: 10px; color: #92400E;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* === 勋章墙 横滑 === */
+  .badges-card {
+    padding: 18px 18px 16px;
+  }
+  .badges-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .badges-title {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .badges-count {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--ink);
+  }
+  .badges-count span { color: var(--amber-600); }
+  .badges-rail {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 8px;
+    margin: 0 -2px;
+    scroll-snap-type: x mandatory;
+  }
+  .badges-rail::-webkit-scrollbar { display: none; }
+  .badge {
+    flex: 0 0 78px;
+    scroll-snap-align: start;
+    border-radius: 16px;
+    background: var(--zinc-50);
+    border: 1px solid var(--zinc-100);
+    padding: 10px 6px 8px;
+    text-align: center;
+    transition: all .2s ease-out;
+    cursor: default;
+  }
+  .badge:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.06); }
+  .badge.locked { opacity: .42; filter: grayscale(.6); }
+  .badge-emoji {
+    width: 36px; height: 36px;
+    margin: 0 auto 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FEF3C7, #FCD34D);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,.06);
+  }
+  .badge.locked .badge-emoji {
+    background: var(--zinc-100);
+    color: var(--ink-3);
+  }
+  .badge-name {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .badge-meta {
+    font-size: 9px;
+    letter-spacing: .8px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  /* ============ 金句书签 ============ */
+  .bm {
+    background: linear-gradient(165deg, #FDFBF5 0%, #F5EEDF 100%);
+    border: 1px solid #E8DFCC;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(28,25,23,.08);
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; position: relative;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .bm:hover { transform: translateY(-3px) rotate(-1deg); box-shadow: 0 10px 24px rgba(28,25,23,.13); }
+  .bm:active { transform: scale(.97); }
+  .bm-hole {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid #C9BA9E; background: var(--bg);
+    flex-shrink: 0; margin-top: 10px;
+  }
+  .bm-string { width: 1px; height: 13px; background: #C9BA9E; flex-shrink: 0; }
+  .bm-date {
+    font-family: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+    font-size: 8.5px; font-weight: 700; letter-spacing: 2px;
+    color: #9A3412; text-transform: uppercase;
+    margin: 5px 0 2px; flex-shrink: 0;
+  }
+  .bm-quote {
+    flex: 1; min-height: 0;
+    writing-mode: vertical-rl;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    color: #1C1917; overflow: hidden;
+    line-height: 2; letter-spacing: 2px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2px 6px;
+  }
+  .bm-seal {
+    width: 22px; height: 22px; border-radius: 4px;
+    background: #A2372A; color: #FDF6EA;
+    font-family: 'Noto Serif SC', serif; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(-4deg);
+    box-shadow: 0 2px 5px rgba(162,55,42,.35);
+    margin: 6px 0 10px; flex-shrink: 0;
+  }
+  .bm.empty { background: transparent; border: 1.5px dashed #D6CDBD; box-shadow: none; cursor: default; }
+  .bm.empty:hover { transform: none; box-shadow: none; }
+  .bm-seal.ghost { background: transparent; border: 1.2px solid #C9BA9E; color: #C9BA9E; box-shadow: none; }
+  .bm-empty-lbl {
+    writing-mode: vertical-rl;
+    font-size: 10px; color: #A8A29E; letter-spacing: 3px;
+    margin: auto 0;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  /* 今日页 · 生成卡 */
+  .bm-gen-card { padding: 16px 18px 14px; }
+  .bm-gen-head { display: flex; justify-content: space-between; align-items: center; }
+  .bm-gen-title { font-family: 'Noto Serif SC', Georgia, serif; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .bm-gen-sub { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+  .bm-gen-btn {
+    padding: 9px 20px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, #D97706, #B45309);
+    color: #FFF7E8; font-size: 12px; font-weight: 600; letter-spacing: 2px;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(180,83,9,.3);
+    transition: transform .2s ease, box-shadow .2s ease;
+    flex-shrink: 0;
+  }
+  .bm-gen-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(180,83,9,.4); }
+  .bm-gen-btn:active { transform: scale(.94); }
+  .bm-slot { display: flex; justify-content: center; padding-top: 14px; min-height: 8px; }
+  .bm-slot .bm { width: 86px; height: 188px; animation: bmIn .45s cubic-bezier(.22,1.2,.36,1); }
+  .bm-slot .bm-quote { font-size: 11.5px; }
+
+  /* 我的页 · 集邮册横滑 */
+  .bm-rail { display: flex; gap: 10px; overflow-x: auto; padding: 6px 2px 4px; }
+  .bm-rail::-webkit-scrollbar { display: none; }
+  .bm-rail .bm { width: 74px; height: 162px; flex-shrink: 0; }
+  .bm-rail .bm-quote { font-size: 10.5px; letter-spacing: 1.5px; }
+
+  /* 集邮册全页 */
+  #page-album { padding: 0 20px 34px; }
+  .album-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+  .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 18px 0 4px; }
+  .album-grid .bm { aspect-ratio: 1 / 2.1; width: 100%; padding-bottom: 2px; }
+  .album-grid .bm-quote { font-size: 12px; letter-spacing: 2.5px; }
+  .album-foot {
+    text-align: center; font-size: 10.5px; color: var(--ink-3);
+    letter-spacing: 2px; margin-top: 22px;
+    font-family: 'Noto Serif SC', Georgia, serif;
+  }
+
+  /* 大图预览 */
+  .bm-overlay {
+    position: absolute; inset: 0; z-index: 60;
+    background: rgba(24,24,27,.58);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .bm-overlay.show { display: flex; animation: fadeIn .2s ease; }
+  .bm-large {
+    width: 248px; height: 478px;
+    background: linear-gradient(165deg, #FDFBF5 0%, #F3EBDA 100%);
+    border: 1px solid #E8DFCC; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4);
+    display: flex; flex-direction: column; align-items: center;
+    animation: bmIn .4s cubic-bezier(.22,1.2,.36,1);
+  }
+  .bm-large .bm-date { font-size: 11px; letter-spacing: 3px; }
+  .bm-large .bm-quote { font-size: 15.5px; line-height: 2.15; letter-spacing: 3px; padding: 4px 10px; }
+  .bm-large .bm-seal { width: 30px; height: 30px; font-size: 15px; margin: 8px 0 16px; }
+  @keyframes bmIn { from { transform: scale(.72) rotate(-5deg); opacity: 0; } }
+
+  .mini-card {
+    padding: 14px;
+    min-height: 90px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .mini-card .lbl {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .mini-card .val {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 20px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+    margin-top: 4px;
+  }
+  .mini-card .val .u {
+    font-size: 11px; color: var(--ink-3);
+    margin-left: 3px; font-weight: 400;
+  }
+
+  .row-card {
+    padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    min-height: 60px;
+  }
+  .row-card .lbl {
+    font-size: 13px; color: var(--ink);
+  }
+  .row-card .val {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .row-card .arrow { color: var(--ink-3); }
+
+  /* ============ KPT / 月复盘 ============ */
+  .detail-page { padding: 0; }
+  .detail-header {
+    padding: 12px 20px 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .back-btn:hover {
+    background: var(--ink);
+    color: var(--card);
+    transform: translateY(-1px);
+  }
+  .detail-header .title {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 16px; font-weight: 600;
+  }
+  .detail-head-text { flex: 1; }
+  .detail-meta {
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: .3px;
+    margin-top: 2px;
+  }
+  .detail-badge {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    background: var(--zinc-900);
+    color: #FFFFFF;
+    transition: all .2s ease-out;
+  }
+  .detail-badge.is-today {
+    background: var(--amber-500);
+    color: #FFFFFF;
+  }
+  .detail-badge.is-future {
+    background: var(--zinc-100);
+    color: var(--ink-2);
+  }
+  .detail-badge.is-miss {
+    background: transparent;
+    color: var(--ink-3);
+    border: 1px solid var(--zinc-200);
+  }
+
+  /* === 日历格子可点击反馈 === */
+  .cal-cell.is-clickable { cursor: pointer; }
+  .cal-cell.is-clickable:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    z-index: 1;
+  }
+  .cal-cell.is-clickable.is-done:hover { background: var(--amber-500); }
+
+  .kpt-block { padding: 8px 20px 32px; }
+
+  .kpt-intro {
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: #92400E;
+    line-height: 1.7;
+    background: linear-gradient(135deg, #FEF3C7, #FED7AA);
+    border: 1px solid #FDE68A;
+    border-radius: 16px;
+  }
+
+  .kpt-section {
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .kpt-letter {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 36px; font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpt-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .kpt-h {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 15px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .kpt-b {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.75;
+  }
+  .k-keep { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); border-color: #A7F3D0; }
+  .k-keep .kpt-letter { color: #065F46; }
+  .k-prob { background: linear-gradient(135deg, #FFE4E6, #FECDD3); border-color: #FECDD3; }
+  .k-prob .kpt-letter { color: #9F1239; }
+  .k-try { background: linear-gradient(135deg, #DBEAFE, #BAE6FD); border-color: #BAE6FD; }
+  .k-try .kpt-letter { color: #1E40AF; }
+
+  .m-events { padding: 16px 18px; margin-bottom: 12px; }
+  .m-event {
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--line-2);
+  }
+  .m-event:last-child { border-bottom: none; padding-bottom: 0; }
+  .m-event:first-child { padding-top: 0; }
+  .m-event .n {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 10px; font-weight: 600;
+    color: var(--ink-3);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .m-event .t {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .m-event .b {
+    font-size: 12px; color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .score {
+    padding: 14px;
+    min-height: 80px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .score .l {
+    font-size: 11px; font-weight: 600;
+    color: var(--ink-2);
+    letter-spacing: 1px;
+  }
+  .score .v {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 28px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .score .v .max { font-size: 13px; color: var(--ink-3); }
+
+  .next-card {
+    padding: 18px;
+    background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    color: #FAFAFA;
+    border-color: #111827;
+  }
+  .next-card .eyebrow { color: #FED7AA; }
+  .next-card .eyebrow .dot { background: #F59E0B; }
+  .next-card .body {
+    font-family: 'Noto Serif SC', Georgia, serif;
+    font-size: 15px; font-weight: 500;
+    color: #FAFAFA;
+    line-height: 1.6;
+  }
+
+  /* ============ Tab 栏 ============ */
+  .tab-bar {
+    height: 64px;
+    background: rgba(250, 250, 250, .92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--line-2);
+    display: flex;
+    flex-shrink: 0;
+    padding: 8px 12px 12px;
+    gap: 6px;
+  }
+  .tab {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+    color: var(--ink-3);
+    font-size: 12px; font-weight: 500;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .tab.active {
+    background: var(--ink);
+    color: var(--card);
+  }
+  .tab .ico {
+    font-size: 14px;
+  }
+
+  /* 减少动效偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+    .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="desktop-tip">
+  <b>每日一思</b>
+  Demo v0.3 · Bento Grid 版<br>
+  悬停卡片会上浮微缩放，点击 tab 切换页面。
+</div>
+
+<div class="phone">
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <span id="clock">17:58</span>
+    <div class="right">
+      <span>◂▴</span>
+      <div class="battery"><div class="battery-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="content">
+
+    <!-- ============ 今日页 ============ -->
+    <div class="page active" id="page-today">
+      <div class="bento">
+
+        <!-- 题目大卡 -->
+        <div class="card col-2 q-card grad-amber">
+          <div>
+            <div class="q-cat" id="q-cat">Self · 自我</div>
+            <div class="q-text" id="q-text">今天让你印象最深的一件事是什么？</div>
+            <div class="q-guide" id="q-guide">别急着回答。先花 30 秒，让今天像电影一样在脑子里过一遍。</div>
+          </div>
+        </div>
+
+        <!-- 连续天数 -->
+        <div class="card stat-card">
+          <div>
+            <div class="lbl">Streak</div>
+            <div><span class="num">6</span><span class="unit">天</span></div>
+          </div>
+          <div>
+            <div class="mini-week" id="mini-week"></div>
+            <div class="streak-foot">最长 12 天 · 距印记还差 <b>2</b> 天</div>
+          </div>
+          <div class="icon">🔥</div>
+        </div>
+
+        <!-- 本月打卡 -->
+        <div class="card stat-card month-card" onclick="switchTab('history')">
+          <div class="lbl">Monthly · 本月</div>
+          <div class="month-ring-wrap">
+            <div class="month-ring" id="month-ring" style="--p:50"></div>
+            <div class="month-ring-num" id="month-ring-num">50%</div>
+          </div>
+          <div class="month-foot">已打卡 <b id="month-done">5</b> / <span id="month-total">10</span> 天 · 去回顾 →</div>
+        </div>
+
+        <!-- 写作区 -->
+        <div class="card col-2 row-2 write-card">
+          <textarea id="today-input" placeholder="写下来，写给自己看。&#10;可以是一段话、几个词、一个名字……"></textarea>
+          <div class="write-meta">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="save-dot" id="save-dot"></span>
+              <span class="meta" id="save-hint">autosave on</span>
+            </div>
+            <span class="meta" id="save-time"></span>
+          </div>
+        </div>
+
+        <!-- 金句书签 -->
+        <div class="card col-2 bm-gen-card">
+          <div class="bm-gen-head">
+            <div>
+              <div class="bm-gen-title">今日书签</div>
+              <div class="bm-gen-sub">从你写下的文字里，提取一句，收进集邮册</div>
+            </div>
+            <button class="bm-gen-btn" id="bm-gen-btn" onclick="genBookmark()">✦ 生成</button>
+          </div>
+          <div class="bm-slot" id="bm-slot"></div>
+        </div>
+
+        <!-- KPT 入口 -->
+        <div class="card col-2 review-card grad-rose review-rose" onclick="showKPT()">
+          <div class="l">
+            <div class="title">今日 KPT 复盘</div>
+            <div class="sub">Keep · Problem · Try · 3 个引导问题</div>
+          </div>
+          <div class="arrow">→</div>
+        </div>
+
+        <!-- 月复盘入口 -->
+        <div class="card col-2 review-card grad-violet review-violet" onclick="showMonthly()">
+          <div class="l">
+            <div class="title">本月复盘</div>
+            <div class="sub">关键事件 + 状态打分 · 5 min</div>
+          </div>
+          <div class="arrow">→</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 回顾页（Tab2 · 打卡足迹）============ -->
+    <div class="page" id="page-history">
+      <div class="page-h">
+        <h1>Review</h1>
+        <div class="sub">Check-in · Streak · Bookmarks · 打卡足迹与集邮</div>
+      </div>
+
+      <div class="bento">
+
+        <!-- 连续打卡 1x1 大数字 -->
+        <div class="card streak-card grad-amber">
+          <div class="streak-flame">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+            </svg>
+          </div>
+          <div class="streak-num">5</div>
+          <div class="streak-lbl">STREAK · 连续天数</div>
+          <div class="streak-sub">昨日已打卡</div>
+        </div>
+
+        <!-- 月度打卡率 1x1 圆环 -->
+        <div class="card ring-card">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 64 64" class="ring-svg">
+              <circle cx="32" cy="32" r="26" class="ring-bg"/>
+              <circle cx="32" cy="32" r="26" class="ring-fg" id="ring-fg"/>
+            </svg>
+            <div class="ring-num" id="ring-num">37%</div>
+          </div>
+          <div class="ring-lbl">SEPTEMBER · 本月打卡率</div>
+          <div class="ring-sub" id="ring-sub">11 / 30 天</div>
+        </div>
+
+        <!-- 日历大卡 col-2 row-2 -->
+        <div class="card col-2 row-2 calendar-card">
+          <div class="cal-head">
+            <div>
+              <div class="cal-eyebrow">CHECK-IN · 打卡日历</div>
+              <div class="cal-title" id="cal-title">September 2026</div>
+            </div>
+            <div class="cal-nav">
+              <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+              <button class="cal-btn" onclick="changeMonth(1)">›</button>
+            </div>
+          </div>
+
+          <div class="cal-week">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span style="color:var(--amber-600)">Sat</span><span style="color:var(--amber-600)">Sun</span>
+          </div>
+
+          <div class="cal-grid" id="cal-grid"></div>
+
+          <div class="cal-foot">
+            <div class="legend"><span class="dot d-done"></span>已打卡</div>
+            <div class="legend"><span class="dot d-today"></span>今日</div>
+            <div class="legend"><span class="dot d-miss"></span>未打卡</div>
+            <div class="legend"><span class="dot d-future"></span>未来</div>
+          </div>
+        </div>
+
+        <!-- 下一枚印记 1x1 -->
+        <div class="card goal-card">
+          <div class="goal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="6"></circle>
+              <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+            </svg>
+          </div>
+          <div class="goal-lbl">NEXT SEAL · 下一枚印记</div>
+          <div class="goal-num"><span id="goal-current">5</span><span class="goal-divider">/</span><span id="goal-target">7</span></div>
+          <div class="goal-bar"><div class="goal-bar-fill" id="goal-bar"></div></div>
+          <div class="goal-sub" id="goal-sub">再坚持 2 天，解锁「一周之始」印记</div>
+        </div>
+
+        <!-- 书签集邮册 横滑长条 col-2 -->
+        <div class="card col-2 badges-card" onclick="showAlbum()">
+          <div class="badges-head">
+            <div class="badges-title">BOOKMARKS · 书签集邮册</div>
+            <div class="badges-count"><span id="bm-count">5</span> 张 · 全部 →</div>
+          </div>
+          <div class="bm-rail" id="bm-rail"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 回顾记录 子页（我的页入口）============ -->
+    <div class="page detail-page" id="page-records">
+      <div class="detail-header">
+        <div class="back-btn" onclick="goBack()">‹</div>
+        <div class="detail-head-text">
+          <div class="title">回顾记录</div>
+          <div class="album-sub">A quiet archive of your days</div>
+        </div>
+      </div>
+
+      <div class="bento">
+
+        <!-- 连续天数据卡 -->
+        <div class="card col-2 streak-card grad-teal">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div class="lbl" style="color:#0F766E;">DAY STREAK</div>
+              <div style="margin-top:8px;">
+                <span class="num-big" style="color:#064E3B;">6</span>
+                <span class="unit" style="color:#0F766E;font-size:14px;margin-left:6px;">天连续</span>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div class="lbl" style="color:#0F766E;">THIS MONTH</div>
+              <div style="margin-top:8px;">
+                <span class="num-big" style="color:#064E3B;">12</span>
+                <span class="unit" style="color:#0F766E;font-size:14px;margin-left:6px;">篇</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 历史条目 -->
+        <div class="card col-2 entry-card" onclick="showDate('2026-09-14')">
+          <div class="meta">
+            <span class="num">No. 06</span>
+            <span style="color:var(--ink-4);">·</span>
+            <span>TUE · SEP 14</span>
+          </div>
+          <div class="q">今天让你印象最深的一件事是什么？</div>
+          <div class="p">下午的评审会。本来准备好的发言被同事抢了，结果我发现他说的比我想的更深入。下次可以先听完再补充。</div>
+        </div>
+
+        <div class="card col-2 entry-card" onclick="showDate('2026-09-13')">
+          <div class="meta">
+            <span class="num">No. 05</span>
+            <span style="color:var(--ink-4);">·</span>
+            <span>MON · SEP 13</span>
+          </div>
+          <div class="q">今天谁帮了你？你感谢了吗？</div>
+          <div class="p">午饭时同事主动帮我捎了一份，下午我送了她一盒巧克力。说"谢谢"是开始，但用行动回应才让关系走得更远。</div>
+        </div>
+
+        <div class="card col-2 entry-card" onclick="showDate('2026-09-12')">
+          <div class="meta">
+            <span class="num">No. 04</span>
+            <span style="color:var(--ink-4);">·</span>
+            <span>SUN · SEP 12</span>
+          </div>
+          <div class="q">今天你学到了什么，哪怕很小？</div>
+          <div class="p">原来 Gin 的中间件是有优先级的。我以为只要注册顺序就是执行顺序，结果不是。这个 bug 调了 2 小时。</div>
+        </div>
+
+        <div class="card col-2 entry-card" onclick="showDate('2026-09-11')">
+          <div class="meta">
+            <span class="num">No. 03</span>
+            <span style="color:var(--ink-4);">·</span>
+            <span>SAT · SEP 11</span>
+          </div>
+          <div class="q">今天你回避了什么？为什么？</div>
+          <div class="p">妈妈打来的电话，响了三声没接。因为最近忙，但其实不是真的忙，是怕她问工作的事。明天主动回。</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 我的页 ============ -->
+    <div class="page" id="page-me">
+      <div class="me-hero">
+        <div class="me-eyebrow">Personal · 个人主页</div>
+        <div class="me-avatar">王</div>
+        <div class="me-name">未命名用户</div>
+        <div class="me-id">Signed in with WeChat · 已坚持 5 天</div>
+      </div>
+
+      <div class="bento">
+
+        <!-- 数据小卡 -->
+        <div class="card mini-card">
+          <div class="lbl">RECORDS</div>
+          <div><span style="font-family:'Noto Serif SC',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);">23</span><span style="font-size:11px;color:var(--ink-3);margin-left:4px;">篇</span></div>
+        </div>
+
+        <div class="card mini-card">
+          <div class="lbl">STREAK</div>
+          <div><span style="font-family:'Noto Serif SC',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);">5</span><span style="font-size:11px;color:var(--ink-3);margin-left:4px;">天</span></div>
+        </div>
+
+        <!-- 回顾记录 -->
+        <div class="card col-2 row-card" onclick="showRecords()">
+          <span class="lbl">回顾记录</span>
+          <span class="arrow">→</span>
+        </div>
+
+        <!-- 书签集邮册 -->
+        <div class="card col-2 row-card" onclick="showAlbum()">
+          <span class="lbl">书签集邮册</span>
+          <span class="arrow">→</span>
+        </div>
+
+        <!-- 提醒时间 -->
+        <div class="card col-2 row-card">
+          <span class="lbl">提醒时间</span>
+          <span class="val">21:00</span>
+        </div>
+
+        <!-- 推送方式 -->
+        <div class="card col-2 row-card">
+          <span class="lbl">推送方式</span>
+          <span class="val">订阅消息</span>
+        </div>
+
+        <!-- 意见反馈 -->
+        <div class="card col-2 row-card">
+          <span class="lbl">意见反馈</span>
+          <span class="arrow">→</span>
+        </div>
+
+        <!-- 版本 -->
+        <div class="card col-2 row-card">
+          <span class="lbl">版本</span>
+          <span class="val">Demo v0.5</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 日期详情页 ============ -->
+    <div class="page detail-page" id="page-detail">
+      <div class="detail-header">
+        <div class="back-btn" onclick="goBack()">‹</div>
+        <div class="detail-head-text">
+          <div class="title" id="detail-title">September 14</div>
+          <div class="detail-meta" id="detail-weekday">Tuesday</div>
+        </div>
+        <div class="detail-badge" id="detail-badge">✓ 已打卡</div>
+      </div>
+      <div class="bento">
+        <div class="card col-2" style="padding: 20px 18px;">
+          <div class="eyebrow"><span class="dot"></span>Today's Question</div>
+          <div class="q-text" id="detail-q" style="margin-top:8px;"></div>
+        </div>
+        <div class="card col-2" id="detail-reflection-card" style="padding: 20px 18px;">
+          <div class="eyebrow"><span class="dot"></span>Your Reflection</div>
+          <div class="body serif" id="detail-c" style="margin-top:12px;line-height:1.85;font-size:14px;color:var(--ink);"></div>
+        </div>
+        <div class="card col-2 row-2 write-card" id="detail-write-card" style="display:none">
+          <div class="eyebrow"><span class="dot"></span>Write for Today</div>
+          <textarea id="detail-input" placeholder="写下来，写给自己看。"></textarea>
+          <div class="write-meta">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="save-dot" id="detail-save-dot"></span>
+              <span class="meta" id="detail-save-hint">autosave on</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ KPT 预览 ============ -->
+    <div class="page detail-page" id="page-kpt">
+      <div class="detail-header">
+        <div class="back-btn" onclick="goBack()">‹</div>
+        <div class="title">KPT · Daily Review</div>
+      </div>
+      <div class="bento">
+        <div class="card col-2 kpt-intro">
+          A framework by 今井正治. Three questions that cover yesterday, today, and tomorrow.
+        </div>
+
+        <div class="card col-2 kpt-section k-keep">
+          <div class="kpt-letter">K</div>
+          <div class="kpt-label">Keep · 今天做对了什么</div>
+          <div class="kpt-h">坚持就是答案</div>
+          <div class="kpt-b">坚持完成了 1500 米游泳，没找借口。下午主动跟同事 A 复盘了一次分歧，没带情绪。</div>
+        </div>
+
+        <div class="card col-2 kpt-section k-prob">
+          <div class="kpt-letter">P</div>
+          <div class="kpt-label">Problem · 今天的问题</div>
+          <div class="kpt-h">看清就是改进</div>
+          <div class="kpt-b">上午项目评审被同事 B 抢了话，没能在合适时机表达观点。晚上刷手机超过 1 小时，挤掉了读书时间。</div>
+        </div>
+
+        <div class="card col-2 kpt-section k-try">
+          <div class="kpt-letter">T</div>
+          <div class="kpt-label">Try · 明天怎么改进</div>
+          <div class="kpt-h">小步就是前进</div>
+          <div class="kpt-b">准备一段 30 秒的开场白，评审前先跟 B 确认发言顺序。晚上 22 点后把手机放到客厅。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 月复盘预览 ============ -->
+    <div class="page detail-page" id="page-monthly">
+      <div class="detail-header">
+        <div class="back-btn" onclick="goBack()">‹</div>
+        <div class="title">September · Monthly</div>
+      </div>
+      <div class="bento">
+        <div class="card col-2 kpt-intro">
+          Fifteen minutes at month's end. Looking at yourself from a longer horizon.
+        </div>
+
+        <div class="card col-2 m-events">
+          <div class="eyebrow"><span class="dot"></span>Key Events</div>
+          <div style="margin-top:10px;">
+            <div class="m-event">
+              <div class="n">No. 01</div>
+              <div class="t">启动了"每日一思"小程序</div>
+              <div class="b">从想法到第一个能用版本花了一周，比预想快。</div>
+            </div>
+            <div class="m-event">
+              <div class="n">No. 02</div>
+              <div class="t">跟父母打了一通认真的电话</div>
+              <div class="b">三个月没主动联系，第一次聊到工作上的焦虑。</div>
+            </div>
+            <div class="m-event">
+              <div class="n">No. 03</div>
+              <div class="t">跑通了人生第一个 10 公里</div>
+              <div class="b">训练了两个月，结果比预期快 8 分钟。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card score">
+          <div class="l">WORK · 工作</div>
+          <div class="v">7<span class="max">/10</span></div>
+        </div>
+        <div class="card score">
+          <div class="l">LIFE · 生活</div>
+          <div class="v">6<span class="max">/10</span></div>
+        </div>
+        <div class="card score">
+          <div class="l">HEALTH · 健康</div>
+          <div class="v">8<span class="max">/10</span></div>
+        </div>
+        <div class="card score">
+          <div class="l">LEARN · 学习</div>
+          <div class="v">7<span class="max">/10</span></div>
+        </div>
+        <div class="card score">
+          <div class="l">RELATE · 关系</div>
+          <div class="v">6<span class="max">/10</span></div>
+        </div>
+        <div class="card score">
+          <div class="l">MIND · 心态</div>
+          <div class="v">8<span class="max">/10</span></div>
+        </div>
+
+        <div class="card col-2 next-card">
+          <div class="eyebrow"><span class="dot"></span>Next Month · One Thing</div>
+          <div class="body">把"每日一思"开放给朋友试用，并基于反馈迭代一轮。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ 书签集邮册页 ============ -->
+  <div class="page detail-page" id="page-album">
+    <div class="detail-header">
+      <div class="back-btn" onclick="goBack()">‹</div>
+      <div class="detail-head-text">
+        <div class="title">书签集邮册</div>
+        <div class="album-sub" id="album-sub">5 张 · 每一张都是你某天写下的话</div>
+      </div>
+    </div>
+    <div class="album-grid" id="album-grid"></div>
+    <div class="album-foot">字是自己的，集起来才算数</div>
+  </div>
+
+  <!-- 书签大图预览 -->
+  <div class="bm-overlay" id="bm-overlay" onclick="closeBmOverlay()">
+    <div class="bm-large" id="bm-large"></div>
+  </div>
+
+  <!-- 底部 Tab -->
+  <div class="tab-bar">
+    <div class="tab active" data-tab="today" onclick="switchTab('today')">
+      <span class="ico">●</span><span>今日</span>
+    </div>
+    <div class="tab" data-tab="history" onclick="switchTab('history')">
+      <span class="ico">●</span><span>回顾</span>
+    </div>
+    <div class="tab" data-tab="me" onclick="switchTab('me')">
+      <span class="ico">●</span><span>我的</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { cat: 'Self · 自我', q: '今天让你印象最深的一件事是什么？', g: '别急着回答。先花 30 秒，让今天像电影一样在脑子里过一遍。' },
+  { cat: 'Growth · 成长', q: '今天你学到了什么，哪怕很小？', g: '可以是工作上的一个知识点，也可以是关于自己的一句话。' },
+  { cat: 'Relation · 关系', q: '今天谁帮了你？你感谢了吗？', g: '不只是大事。也许只是一句提醒、一个让座、一封转发。' },
+  { cat: 'Work · 工作', q: '今天最让你有成就感的事是什么？', g: '哪怕只是写完了一封难写的邮件。' },
+  { cat: 'Self · 自我', q: '今天你最欣赏自己的什么？', g: '别谦虚。说一个具体的瞬间。' },
+  { cat: 'Growth · 成长', q: '今天你回避了什么？为什么？', g: '回避往往是最值得追问的事。' },
+  { cat: 'Self · 自我', q: '今天的情绪曲线是什么样的？', g: '什么时候低，什么时候高，拐点发生在哪里？' },
+  { cat: 'Work · 工作', q: '今天你坚持了什么？', g: '哪怕是一件小事——没刷朋友圈、把一个会开完、早睡了 10 分钟。' },
+  { cat: 'Relation · 关系', q: '今天你最想感谢谁？为什么？', g: '想清楚 ta 帮了你什么，下次怎么回。' },
+  { cat: 'Self · 自我', q: '今天你最怕的是什么？', g: '怕本身不是弱点，不愿承认才是。' },
+  { cat: 'Work · 工作', q: '今天你做的哪件事最像"未来的你"会做的？', g: '未来的你会怎么做今天这一件事？' },
+  { cat: 'Growth · 成长', q: '今天你为长远目标做了一点小事吗？', g: '哪怕是 5 分钟的累积，都算。' },
+  { cat: 'Self · 自我', q: '今天哪个习惯帮了你？哪个拖了你？', g: '好习惯放大、坏习惯隔离。' },
+  { cat: 'Work · 工作', q: '今天你花了最多时间在什么事上？这值得吗？', g: '时间是最诚实的镜子。' },
+  { cat: 'Relation · 关系', q: '今天你听到的哪句话让你停了一下？', g: '让你停下来的人，往往是照见你的人。' },
+  { cat: 'Growth · 成长', q: '今天你读到 / 看到的哪样东西让你思考了？', g: '一篇文章、一段对话、一张照片。' },
+  { cat: 'Self · 自我', q: '今天你有没有忍住没说的话？', g: '为什么没说？说出来的版本会是什么样的？' },
+  { cat: 'Work · 工作', q: '如果今天能重来，你会做哪个不同的决定？', g: '只挑一个——最重要的那个。' },
+  { cat: 'Self · 自我', q: '今天你对自己最不满意的是什么？', g: '不是自责，是观察。' },
+  { cat: 'Relation · 关系', q: '今天你帮了谁？怎么帮的？', g: '哪怕只是转发了一个人需要的信息。' },
+  { cat: 'Work · 工作', q: '今天你在什么事上拖延了？下次会怎么破？', g: '拖延背后通常藏着恐惧，问问自己在怕什么。' },
+  { cat: 'Growth · 成长', q: '今天你说了什么真心话？', g: '真心话比漂亮话更轻，但更值钱。' },
+  { cat: 'Self · 自我', q: '今天让你最难开口的请求是什么？', g: '最难开口的，往往是最该开口的。' },
+  { cat: 'Work · 工作', q: '今天你拒绝了一件什么事？为什么拒绝？', g: '拒绝是另一种选择。' },
+  { cat: 'Relation · 关系', q: '今天你接受了一件什么事？接受的过程顺利吗？', g: '接受不一定舒服，但有时是成长。' },
+  { cat: 'Self · 自我', q: '今天让你最难开口的请求是什么？', g: '不舒服是身体在说话，听听它说什么。' },
+  { cat: 'Growth · 成长', q: '今天哪个时刻让你最专注？', g: '专注是一种状态，记录下来，下次能复制。' },
+  { cat: 'Work · 工作', q: '今天哪个时刻让你最分心？', g: '分心的诱因往往是信号，不是敌人。' },
+  { cat: 'Self · 自我', q: '今天你为别人做的哪件小事，可能被忽略了？', g: '被忽略的好事，更值得记录。' },
+  { cat: 'Growth · 成长', q: '一个月后回看今天，你最想记住什么？', g: '用未来的视角给今天加权重。' }
+];
+
+const HISTORY = [
+  { date: '2026-09-14', display: 'September 14 · Tuesday', q: '今天让你印象最深的一件事是什么？', content: '下午的评审会。本来准备好的发言被同事抢了，结果我发现他说的比我想的更深入。下次我可以先听完再补充，会更稳。' },
+  { date: '2026-09-13', display: 'September 13 · Monday', q: '今天谁帮了你？你感谢了吗？', content: '午饭时同事主动帮我捎了一份，下午我送了她一盒巧克力。说"谢谢"是开始，但用行动回应才让关系走得更远。' },
+  { date: '2026-09-12', display: 'September 12 · Sunday', q: '今天你学到了什么，哪怕很小？', content: '原来 Gin 的中间件是有优先级的。我以为只要注册顺序就是执行顺序，结果不是。这个 bug 调了 2 小时。' },
+  { date: '2026-09-11', display: 'September 11 · Saturday', q: '今天你回避了什么？为什么？', content: '妈妈打来的电话，响了三声没接。因为最近忙，但其实不是真的忙，是怕她问工作的事。明天主动回。' }
+];
+
+/* === 打卡日历数据 === */
+// 模拟当月已打卡的日子（基于当前真实日期 2026-09-15）
+const TODAY = new Date(2026, 8, 15); // 月份 0-indexed → 9 月
+const CHECKED_DATES = new Set([
+  '2026-09-01','2026-09-02','2026-09-03',
+  '2026-09-05',
+  '2026-09-07','2026-09-08','2026-09-09','2026-09-10','2026-09-11','2026-09-12','2026-09-13','2026-09-14',
+  '2026-10-05','2026-10-06','2026-10-07','2026-10-08','2026-10-09'
+]);
+
+const ACHIEVEMENTS = [
+  { days: 3,   name: '初心',     meta: '3 DAYS',   emoji: '🌱' },
+  { days: 7,   name: '一周之始', meta: '7 DAYS',   emoji: '✦' },
+  { days: 14,  name: '两周沉潜', meta: '14 DAYS',  emoji: '◐' },
+  { days: 21,  name: '三周成习', meta: '21 DAYS',  emoji: '✺' },
+  { days: 30,  name: '月度之光', meta: '30 DAYS',  emoji: '☾' },
+  { days: 60,  name: '双月同行', meta: '60 DAYS',  emoji: '◈' },
+  { days: 100, name: '百日之程', meta: '100 DAYS', emoji: '★' },
+  { days: 365, name: '一年之约', meta: '365 DAYS', emoji: '✦' }
+];
+
+let viewYear = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isSameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
+
+// 把周一作为每周第一天
+function firstWeekday(y, m) {
+  const wd = new Date(y, m, 1).getDay(); // 0=Sun
+  return (wd + 6) % 7; // 转成 0=Mon
+}
+
+function computeStreak() {
+  let streak = 0;
+  const d = new Date(TODAY);
+  // 今日是否打卡不影响"连续天数显示"——只看历史连续
+  while (true) {
+    const key = fmtDate(d);
+    if (CHECKED_DATES.has(key)) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function computeMonthlyRate(y, m) {
+  const total = daysInMonth(y, m);
+  let done = 0;
+  for (let day=1; day<=total; day++) {
+    const key = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    if (CHECKED_DATES.has(key)) done++;
+  }
+  return { done, total, pct: Math.round(done/total*100) };
+}
+
+function renderCalendar() {
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('#cal-title').textContent = `${monthNames[viewMonth]} ${viewYear}`;
+
+  const grid = $('#cal-grid');
+  grid.innerHTML = '';
+
+  const first = firstWeekday(viewYear, viewMonth);
+  const total = daysInMonth(viewYear, viewMonth);
+  const prevTotal = daysInMonth(viewYear, viewMonth - 1);
+
+  // 上月补位
+  for (let i=first; i>0; i--) {
+    const d = new Date(viewYear, viewMonth - 1, prevTotal - i + 1);
+    const c = document.createElement('div');
+    c.className = 'cal-cell is-other';
+    c.textContent = d.getDate();
+    grid.appendChild(c);
+  }
+  // 当月
+  for (let day=1; day<=total; day++) {
+    const d = new Date(viewYear, viewMonth, day);
+    const key = fmtDate(d);
+    const c = document.createElement('div');
+    c.className = 'cal-cell';
+    c.textContent = day;
+    const isToday = isSameDay(d, TODAY);
+    const isDone = CHECKED_DATES.has(key);
+    const isFuture = d > TODAY;
+    if (isToday) c.classList.add('is-today');
+    if (isDone) c.classList.add('is-done');
+    if (isFuture) c.classList.add('is-future');
+    if (isDone || isToday || !isFuture) {
+      c.classList.add('is-clickable');
+      // 内联属性绑定，最稳
+      c.setAttribute('onclick', `showDate('${key}')`);
+    }
+    grid.appendChild(c);
+  }
+  // 下月补位 (凑 42 = 6 行)
+  const cellsUsed = first + total;
+  const remain = (7 - cellsUsed % 7) % 7;
+  for (let i=1; i<=remain; i++) {
+    const d = new Date(viewYear, viewMonth + 1, i);
+    const c = document.createElement('div');
+    c.className = 'cal-cell is-other is-future';
+    c.textContent = d.getDate();
+    grid.appendChild(c);
+  }
+
+  // 月度打卡率
+  const r = computeMonthlyRate(viewYear, viewMonth);
+  const C = 2 * Math.PI * 26; // ≈ 163.36
+  const offset = C * (1 - r.pct/100);
+  $('#ring-fg').style.strokeDashoffset = offset;
+  $('#ring-num').textContent = `${r.pct}%`;
+  $('#ring-sub').textContent = `${r.done} / ${r.total} 天`;
+}
+
+function renderStreakAndGoal() {
+  const streak = computeStreak();
+  // 找到下一个未达成成就
+  const next = ACHIEVEMENTS.find(a => a.days > streak) || ACHIEVEMENTS[ACHIEVEMENTS.length - 1];
+  $('#goal-current').textContent = streak;
+  $('#goal-target').textContent = next.days;
+  const left = Math.max(0, next.days - streak);
+  $('#goal-sub').textContent = left > 0
+    ? `再坚持 ${left} 天，解锁「${next.name}」`
+    : `恭喜！已解锁「${next.name}」`;
+  $('#goal-bar').style.width = Math.min(100, streak / next.days * 100) + '%';
+}
+
+/* ============ 金句书签 ============ */
+const BOOKMARKS = [
+  { date: 'SEP 09', q: '决定不做什么，也是决定。' },
+  { date: 'SEP 10', q: '专注不是用力，是排除。' },
+  { date: 'SEP 11', q: '不是真的忙，是怕面对。' },
+  { date: 'SEP 12', q: '以为的顺序，未必是执行的顺序。' },
+  { date: 'SEP 13', q: '谢谢是开始，回应才是继续。' },
+];
+
+function bmHTML(b) {
+  return `
+    <div class="bm-hole"></div>
+    <div class="bm-string"></div>
+    <div class="bm-date">${b.date}</div>
+    <div class="bm-quote">${b.q}</div>
+    <div class="bm-seal">思</div>
+  `;
+}
+
+function renderBmRail() {
+  const rail = $('#bm-rail');
+  rail.innerHTML = '';
+  BOOKMARKS.forEach((b, i) => {
+    const d = document.createElement('div');
+    d.className = 'bm';
+    d.innerHTML = bmHTML(b);
+    d.setAttribute('onclick', `openBm(${i})`);
+    rail.appendChild(d);
+  });
+  $('#bm-count').textContent = BOOKMARKS.length;
+}
+
+function showAlbum() {
+  prevTab = currentTab;
+  $$('.page').forEach(p => p.classList.remove('active'));
+  const grid = $('#album-grid');
+  grid.innerHTML = '';
+  BOOKMARKS.forEach((b, i) => {
+    const d = document.createElement('div');
+    d.className = 'bm';
+    d.innerHTML = bmHTML(b);
+    d.setAttribute('onclick', `openBm(${i})`);
+    grid.appendChild(d);
+  });
+  for (let k = 0; k < 6; k++) {
+    const d = document.createElement('div');
+    d.className = 'bm empty';
+    d.innerHTML = `<div class="bm-hole" style="border-style:dashed;"></div><div class="bm-empty-lbl">待收藏</div>`;
+    grid.appendChild(d);
+  }
+  $('#album-sub').textContent = `${BOOKMARKS.length} 张 · 每一张都是你某天写下的话`;
+  $('#page-album').classList.add('active');
+}
+
+function openBm(i) {
+  $('#bm-large').innerHTML = bmHTML(BOOKMARKS[i]);
+  $('#bm-overlay').classList.add('show');
+}
+function closeBmOverlay() {
+  $('#bm-overlay').classList.remove('show');
+}
+
+/* 金句提取：从用户写的文字里挑一句最有力量的 */
+const FALLBACK_QUOTES = [
+  '把今天过好，就是交代。',
+  '慢一点，反而快。',
+  '先听完，再补充。',
+];
+function extractQuote(text) {
+  if (!text || !text.trim()) return '';
+  const parts = text.split(/[。！？；!?;\n]/)
+    .map(s => s.trim().replace(/^[，,、\s]+/, ''))
+    .filter(s => s.length >= 4);
+  if (!parts.length) return text.trim().slice(0, 18);
+  const short = parts.filter(p => p.length <= 20);
+  const pool = short.length ? short : [parts.sort((a, b) => a.length - b.length)[0].slice(0, 20)];
+  return pool.sort((a, b) => b.length - a.length)[0];
+}
+
+let bmGenIdx = 0;
+let todayBmCollected = false;
+function genBookmark() {
+  let q = extractQuote($('#today-input').value);
+  if (!q) q = FALLBACK_QUOTES[bmGenIdx++ % FALLBACK_QUOTES.length];
+  const now = new Date();
+  const mon = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][now.getMonth()];
+  const b = { date: `${mon} ${now.getDate()}`, q };
+  $('#bm-slot').innerHTML = `<div class="bm">${bmHTML(b)}</div>`;
+  $('#bm-gen-btn').textContent = '↻ 换一句';
+  if (!todayBmCollected) {
+    BOOKMARKS.push(b);
+    todayBmCollected = true;
+    renderBmRail();
+  } else {
+    BOOKMARKS[BOOKMARKS.length - 1] = b;
+  }
+}
+
+function changeMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+
+let currentTab = 'today';
+let prevTab = 'today';
+let savedText = '';
+
+function $(s) { return document.querySelector(s); }
+function $$(s) { return document.querySelectorAll(s); }
+
+function setClock() {
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  $('#clock').textContent = `${h}:${m}`;
+}
+setClock(); setInterval(setClock, 30000);
+
+function setTodayQuestion() {
+  const now = new Date();
+  const seed = now.getFullYear() * 1000 + (now.getMonth() + 1) * 50 + now.getDate();
+  const idx = seed % QUESTIONS.length;
+  const item = QUESTIONS[idx];
+  $('#q-cat').textContent = item.cat;
+  $('#q-text').textContent = item.q;
+  $('#q-guide').textContent = item.g;
+}
+
+function switchTab(tab) {
+  if (currentTab === tab) return;
+  prevTab = currentTab;
+  currentTab = tab;
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $(`#page-${tab}`).classList.add('active');
+  if (tab === 'history') {
+    renderCalendar();
+    renderStreakAndGoal();
+    renderBmRail();
+  }
+}
+
+function showRecords() {
+  prevTab = currentTab;
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $('#page-records').classList.add('active');
+}
+
+function showDetail(i) {
+  // 兼容旧的历史列表（已改成 showDate，但仍保留以防误调用）
+  const h = HISTORY[i];
+  if (h) showDate(h.date);
+}
+
+function parseDate(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function weekdayName(d) {
+  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+}
+function getQuestionForDate(d) {
+  const seed = d.getFullYear() * 1000 + (d.getMonth() + 1) * 50 + d.getDate();
+  return QUESTIONS[seed % QUESTIONS.length];
+}
+function dayOfYear(d) {
+  const start = new Date(d.getFullYear(), 0, 0);
+  return Math.floor((d - start) / 86400000);
+}
+
+function showDate(dateKey) {
+  const d = parseDate(dateKey);
+  const isToday = isSameDay(d, TODAY);
+  const isFuture = d > TODAY;
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  // 标题 / 星期
+  $('#detail-title').textContent = `${monthNames[d.getMonth()]} ${d.getDate()}`;
+  $('#detail-weekday').textContent = `${weekdayName(d)} · 第 ${dayOfYear(d)} 天`;
+
+  // 状态徽章
+  const badge = $('#detail-badge');
+  badge.className = 'detail-badge';
+  if (isToday) {
+    badge.classList.add('is-today');
+    badge.textContent = 'TODAY';
+  } else if (isFuture) {
+    badge.classList.add('is-future');
+    badge.textContent = 'FUTURE';
+  } else if (CHECKED_DATES.has(dateKey)) {
+    badge.textContent = '已打卡';
+  } else {
+    badge.classList.add('is-miss');
+    badge.textContent = '未打卡';
+  }
+
+  // 找内容：HISTORY 优先，否则按"已打卡"显示占位
+  const h = HISTORY.find(x => x.date === dateKey);
+  let question, content;
+  if (h) {
+    question = h.q;
+    content = h.content;
+  } else {
+    const qItem = getQuestionForDate(d);
+    question = qItem.q;
+    if (CHECKED_DATES.has(dateKey)) {
+      content = '那天没有写下具体内容，只打了卡。';
+    } else if (isFuture) {
+      question = '那一天还没到，先把今天过好。';
+      content = '未来不剧透。把今天写下来，未来自然会出现。';
+    } else {
+      content = '那天没有打卡，也没有写下任何内容。';
+    }
+  }
+  $('#detail-q').textContent = question;
+
+  // 今日：显示写作卡；其他：显示反思卡
+  const reflection = $('#detail-reflection-card');
+  const writer = $('#detail-write-card');
+  if (isToday) {
+    reflection.style.display = 'none';
+    writer.style.display = '';
+    $('#detail-input').value = savedText || '';
+  } else {
+    writer.style.display = 'none';
+    reflection.style.display = '';
+    $('#detail-c').textContent = content;
+  }
+
+  prevTab = currentTab;
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $('#page-detail').classList.add('active');
+}
+
+function showKPT() {
+  prevTab = currentTab;
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $('#page-kpt').classList.add('active');
+}
+
+function showMonthly() {
+  prevTab = currentTab;
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $('#page-monthly').classList.add('active');
+}
+
+function goBack() {
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $(`#page-${prevTab}`).classList.add('active');
+  currentTab = prevTab;
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === currentTab));
+}
+
+const input = $('#today-input');
+const saveHint = $('#save-hint');
+const saveDot = $('#save-dot');
+const saveTime = $('#save-time');
+let saveTimer = null;
+
+input.addEventListener('input', () => {
+  const v = input.value;
+  if (v === savedText) return;
+  saveHint.textContent = 'saving…';
+  saveDot.className = 'save-dot saving';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    savedText = v;
+    saveHint.textContent = 'autosaved';
+    saveDot.className = 'save-dot saved';
+    const d = new Date();
+    saveTime.textContent = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    setTimeout(() => {
+      saveHint.textContent = 'autosave on';
+      saveDot.className = 'save-dot';
+      saveTime.textContent = '';
+    }, 1800);
+  }, 500);
+});
+
+setTodayQuestion();
+renderCalendar();
+renderStreakAndGoal();
+renderBmRail();
+renderMiniWeek();
+renderMonthCard();
+
+/* 今日页 · 最近 7 天迷你打卡条 */
+function renderMiniWeek() {
+  const box = $('#mini-week');
+  if (!box) return;
+  box.innerHTML = '';
+  const wds = ['一','二','三','四','五','六','日'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(TODAY); d.setDate(d.getDate() - i);
+    const key = fmtDate(d);
+    const wd = wds[(d.getDay() + 6) % 7];
+    const done = CHECKED_DATES.has(key);
+    const isToday = i === 0;
+    const cell = document.createElement('div');
+    cell.className = 'mw-day';
+    cell.innerHTML = `<span class="mw-dot${done ? ' done' : (isToday ? ' today' : '')}"></span><span class="mw-wd">${wd}</span>`;
+    box.appendChild(cell);
+  }
+}
+
+function renderMonthCard() {
+  const y = TODAY.getFullYear(), m = TODAY.getMonth();
+  let done = 0;
+  CHECKED_DATES.forEach(key => {
+    const [ky, km] = key.split('-').map(Number);
+    if (ky === y && km === m + 1) done++;
+  });
+  const elapsed = TODAY.getDate();
+  const pct = elapsed ? Math.round(done / elapsed * 100) : 0;
+  $('#month-ring').style.setProperty('--p', pct);
+  $('#month-ring-num').textContent = pct + '%';
+  $('#month-done').textContent = done;
+  $('#month-total').textContent = elapsed;
+}
+</script>
+</body>
+</html>
